@@ -4,7 +4,10 @@ import pandas as pd
 import os
 import torch
 from torch.utils.data import Dataset, DataLoader
-from sklearn.preprocessing import StandardScaler
+# from sklearn.preprocessing import StandardScaler
+
+from utils.tools import StandardScaler  # Informer2020
+
 from sklearn.preprocessing import MinMaxScaler
 from utils.timefeatures import time_features
 import warnings
@@ -44,8 +47,8 @@ class Dataset_ETT_hour(Dataset):
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
 
-        border1s = [0, 12 * 30 * 24 - self.seq_len, 12 * 30 * 24 + 4 * 30 * 24 - self.seq_len]
-        border2s = [12 * 30 * 24, 12 * 30 * 24 + 4 * 30 * 24, 12 * 30 * 24 + 8 * 30 * 24]
+        border1s = [0,              12 * 30 * 24 - self.seq_len,        12 * 30 * 24 + 4 * 30 * 24 - self.seq_len]
+        border2s = [12 * 30 * 24,   12 * 30 * 24 + 4 * 30 * 24,         12 * 30 * 24 + 8 * 30 * 24]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
 
@@ -55,13 +58,25 @@ class Dataset_ETT_hour(Dataset):
         elif self.features == 'S':
             df_data = df_raw[[self.target]]
 
-        mms = MinMaxScaler(feature_range=(0, 1))
+        # --------------------------------------------------------------------------------------
+
+        # mms = MinMaxScaler(feature_range=(0, 1))
+        # if self.scale:
+        #     train_data = df_data[border1s[0]:border2s[0]]
+        #     mms.fit_transform(train_data.values)
+        #     data = mms.fit_transform(df_data.values)
+        # else:
+        #     data = df_data.values
+
+        # Informer2020
         if self.scale:
             train_data = df_data[border1s[0]:border2s[0]]
-            mms.fit_transform(train_data.values)
-            data = mms.fit_transform(df_data.values)
+            self.scaler.fit(train_data.values)
+            data = self.scaler.transform(df_data.values)
         else:
             data = df_data.values
+
+        # --------------------------------------------------------------------------------------
 
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
@@ -95,9 +110,14 @@ class Dataset_ETT_hour(Dataset):
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
 
+
     def inverse_transform(self, data):
-        mms = MinMaxScaler(feature_range=(0, 1))
-        return mms.fit_transform(data.cpu())
+
+        # mms = MinMaxScaler(feature_range=(0, 1))
+        # return mms.fit_transform(data.cpu())
+
+        # Informer2020
+        return self.scaler.inverse_transform(data)
 
 
 class Dataset_ETT_minute(Dataset):
