@@ -2,7 +2,7 @@ from data_provider.data_loader import Dataset_Covid, Dataset_Custom, Dataset_Pre
 from torch.utils.data import DataLoader
 
 data_dict = {
-    'ETTh1': Dataset_ETT_hour,# Dataset_ETT_hour, # 2023年12月1日 09点34分 改动，由于和Informer类的模型划分数据集的数量不同，因此尝试更改
+    'ETTh1': Dataset_ETT_hour,# Dataset_ETT_hour, # 2023年12月1日 09点34分 改动，由于和Informer类的模型划分数据集的数量不同，因此更改
     'ETTm1': Dataset_Custom_,
     'traffic': Dataset_Custom,
     'electricity': Dataset_Custom_,
